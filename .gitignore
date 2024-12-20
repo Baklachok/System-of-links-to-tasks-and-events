@@ -1,43 +1,65 @@
-# Общие настройки для ОС
-.DS_Store
-Thumbs.db
-
-# Файлы и папки виртуальных окружений
-venv/
-.env
-
-# Python кэш-файлы
-__pycache__/
-*.py[cod]
+# Python
+*.pyc
 *.pyo
+*.pyd
+__pycache__/
+*.env
 
-# Django файлы
-db.sqlite3
-media/
-staticfiles/
+# Virtual environment
+env/
+venv/
+.venv/
+ENV/
 
-# Логи
-*.log
-logs/
-
-# Настройки IDE и редакторов
+# IDEs
 .idea/
 .vscode/
 *.swp
 
+# Logs
+*.log
+*.out
+*.err
+
+# OS files
+.DS_Store
+Thumbs.db
+
 # Docker
-*.pid
+*.env
 docker-compose.override.yml
+.dockerignore
+*.pid
 
-# Kafka
-*.tgz
-tmp/
+# FastAPI
+instance/
+*.db
+*.sqlite3
 
-# Настройки зависимостей
-pip-log.txt
-pip-delete-this-directory.txt
+# Migrations
+migrations/
+alembic/
 
-# Node.js/React (если используется)
-node_modules/
-build/
+# Byte-compiled / optimized / DLL files
+*.py[cod]
+*.so
+
+# Testing
+.coverage
+.cache/
+htmlcov/
+
+# Pytest
+.pytest_cache/
+
+# MyPy
+.mypy_cache/
+
+# Build artifacts
 dist/
+build/
+*.egg-info/
+.eggs/
+
+# Celery
+celerybeat-schedule
