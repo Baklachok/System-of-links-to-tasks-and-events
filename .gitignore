@@ -1,0 +1,43 @@
+# Общие настройки для ОС
+.DS_Store
+Thumbs.db
+
+# Файлы и папки виртуальных окружений
+venv/
+.env
+
+# Python кэш-файлы
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Django файлы
+db.sqlite3
+media/
+staticfiles/
+
+# Логи
+*.log
+logs/
+
+# Настройки IDE и редакторов
+.idea/
+.vscode/
+*.swp
+
+# Docker
+*.pid
+docker-compose.override.yml
+
+# Kafka
+*.tgz
+tmp/
+
+# Настройки зависимостей
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Node.js/React (если используется)
+node_modules/
+build/
+dist/
