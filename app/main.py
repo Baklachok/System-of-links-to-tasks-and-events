@@ -1,9 +1,12 @@
 from fastapi import FastAPI
 
-# Создаем экземпляр FastAPI
+from app.init_db import init_db
+from app.routers import auth
+
 app = FastAPI()
 
-# Определяем корневой роут
-@app.get("/")
-async def root():
-    return {"message": "Welcome to FastAPI!"}
+@app.on_event("startup")
+async def startup_event():
+    init_db()
+
+app.include_router(auth.router)
