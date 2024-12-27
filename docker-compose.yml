@@ -16,6 +16,7 @@ services:
       DATABASE_URL: "postgresql+asyncpg://user:password@postgres:5432/mydatabase"
       REDIS_URL: "redis://redis:6379"
       RABBITMQ_URL: "amqp://guest:guest@rabbitmq:5672/"
+      LOG_LEVEL: "info"
     volumes:
       - .:/app
 

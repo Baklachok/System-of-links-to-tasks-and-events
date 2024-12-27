@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.config import ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_DAYS
 from app.db import get_db
+from app.logger import logger
 from app.models.user import User
 from app.schemas.auth import UserCreate, UserLogin, UserResponse
 from app.services.auth import (
@@ -72,17 +73,29 @@ def refresh_token(request: Request, response: Response, db: Session = Depends(ge
 
 @router.get("/auth/me", response_model=UserResponse)
 def get_me(request: Request, db: Session = Depends(get_db)):
+    logger.info("Получен запрос на /auth/me")
+
     access_token = request.cookies.get("access_token")
     if not access_token:
+        logger.warning("Токен доступа отсутствует")
         raise HTTPException(status_code=401, detail="Access token missing")
 
-    payload = decode_token(access_token)
+    logger.info(f"Токен: {access_token}")
+    try:
+        payload = decode_token(access_token)
+    except Exception as e:
+        logger.error(f"Ошибка декодирования токена: {e}")
+        raise HTTPException(status_code=401, detail="Invalid access token")
+
     user_id = payload.get("sub")
     if not user_id:
+        logger.warning("ID пользователя отсутствует в токене")
         raise HTTPException(status_code=401, detail="Invalid access token")
 
     db_user = db.query(User).filter(User.id == user_id).first()
     if not db_user:
+        logger.warning(f"Пользователь с ID {user_id} не найден")
         raise HTTPException(status_code=404, detail="User not found")
 
+    logger.info(f"Пользователь найден: {db_user.email}")
     return db_user
