@@ -2,9 +2,9 @@ from uuid import uuid4
 from fastapi import APIRouter, Depends, HTTPException, Response, Request
 from sqlalchemy.orm import Session
 
-from app.config import ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_DAYS
-from app.db import get_db
-from app.logger import logger
+from app.core.config import ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_DAYS
+from app.core.db import get_db
+from app.core.logger import logger
 from app.models.user import User
 from app.schemas.auth import UserCreate, UserLogin, UserResponse
 from app.services.auth import (

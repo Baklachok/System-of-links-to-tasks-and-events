@@ -1,5 +1,5 @@
-from app.db import Base, engine
-from app.models.user import User  # Импортируйте все модели, которые вы хотите создать
+from app.core.db import Base, engine
+
 
 # Создание всех таблиц в базе данных
 def init_db():

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from app.init_db import init_db
+from app.core.init_db import init_db
 from app.routers import auth
 
 app = FastAPI()
