@@ -2,9 +2,7 @@ version: "3.9"
 
 services:
   fastapi:
-    build:
-      context: . # Путь к Dockerfile
-      dockerfile: Dockerfile
+    image: baklachok/links_and_tasks:latest
     container_name: fastapi-app
     ports:
       - "8000:8000" # Пробрасываем порт
@@ -19,7 +17,7 @@ services:
       RABBITMQ_URL: "amqp://guest:guest@rabbitmq:5672/"
       LOG_LEVEL: "info"
     volumes:
-      - .:/app
+      - ./your_local_env_file:/app/.env
 
   postgres:
     image: postgres:15
