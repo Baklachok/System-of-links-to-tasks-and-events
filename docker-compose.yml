@@ -5,47 +5,35 @@ services:
     image: baklachok/links_and_tasks:latest
     container_name: fastapi-app
     ports:
-      - "8000:8000" # Пробрасываем порт
+      - "8000:8000"
     env_file: .env
     depends_on:
       - postgres
       - redis
       - rabbitmq
-    environment:
-      DATABASE_URL: "postgresql+asyncpg://user:password@postgres:5432/mydatabase"
-      REDIS_URL: "redis://redis:6379"
-      RABBITMQ_URL: "amqp://guest:guest@rabbitmq:5672/"
-      LOG_LEVEL: "info"
-    volumes:
-      - ./your_local_env_file:/app/.env
 
   postgres:
     image: postgres:15
     container_name: postgres
-    environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: mydatabase
+    env_file: .env
     ports:
       - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
 
   redis:
     image: redis:7
     container_name: redis
     ports:
       - "6379:6379"
+    restart: always
 
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
     ports:
       - "5672:5672"
-      - "15672:15672" # Для доступа к RabbitMQ Management UI
-    environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
+      - "15672:15672"
+    env_file: .env
+    restart: always
 
 volumes:
   postgres_data:

@@ -2,55 +2,70 @@
 *.pyc
 *.pyo
 *.pyd
+*.pyd
+*.whl
 __pycache__/
-*.env
+*.py[cod]
 
 # Virtual environment
 env/
 venv/
 .venv/
 ENV/
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
 
-# IDEs
-.idea/
-.vscode/
-*.swp
+# Environment variables
+*.env
+*.env.*
 
-# Logs
+# Logs and debugging
 *.log
 *.out
 *.err
+*.trace
+*.prof
 
-# OS files
+# IDEs and editors
+.idea/
+.vscode/
+*.swp
+*.sublime-workspace
+*.sublime-project
+
+# OS generated files
 .DS_Store
 Thumbs.db
-
-# Docker
-*.env
-docker-compose.override.yml
-.dockerignore
-*.pid
+desktop.ini
+*.lnk
 
 # FastAPI
 instance/
 *.db
 *.sqlite3
+*.sqlite
 
-# Migrations
+# Docker
+.dockerignore
+*.pid
+docker-compose.override.yml
+
+# Celery
+celerybeat-schedule
+*.pid
+
+# Alembic and Migrations
 migrations/
 alembic/
 
-# Byte-compiled / optimized / DLL files
-*.py[cod]
-*.so
-
 # Testing
+.pytest_cache/
 .coverage
 .cache/
 htmlcov/
-
-# Pytest
-.pytest_cache/
+nosetests.xml
+test-results.xml
 
 # MyPy
 .mypy_cache/
@@ -60,6 +75,34 @@ dist/
 build/
 *.egg-info/
 .eggs/
+*.manifest
+*.spec
 
-# Celery
-celerybeat-schedule
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# Byte-compiled / optimized / DLL files
+*.pyc
+*.pyo
+*.pyd
+*.so
+
+# Coverage reports
+.coverage
+.coverage.*
+
+# Static files
+staticfiles/
+static/
+
+# Temp files
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*.swn
+
+# Local configurations
+*.local
+*.bak
