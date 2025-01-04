@@ -8,16 +8,17 @@ from app.core.db import Base, get_db
 from app.models.user import User
 from app.services.auth import hash_password, create_access_token
 
-# Настройка тестовой базы данных
-TEST_DATABASE_URL = "sqlite:///./test.db"  # SQLite для тестов
+# Тестовая база данных SQLite (in-memory)
+TEST_DATABASE_URL = "sqlite:///./test.db"
 
+# Настройка тестового движка и сессии
 engine = create_engine(TEST_DATABASE_URL, connect_args={"check_same_thread": False})
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
-# Создаём тестовую сессию базы данных
 @pytest.fixture(scope="function")
 def db():
+    """Инициализация тестовой базы данных."""
     Base.metadata.create_all(bind=engine)
     db = TestingSessionLocal()
     try:
@@ -27,31 +28,23 @@ def db():
         Base.metadata.drop_all(bind=engine)
 
 
-# Переопределяем зависимость для тестов
-app.dependency_overrides[get_db] = lambda: next(db())
+# Переопределение зависимости get_db
+@pytest.fixture
+def override_get_db(db):
+    """Переопределение зависимости базы данных для тестов."""
+    app.dependency_overrides[get_db] = lambda: db
+    yield
+    app.dependency_overrides.pop(get_db, None)
 
-# Создаём клиент для тестирования
+
+# Клиент для тестирования
 client = TestClient(app)
 
 
-# Фикстуры для тестовых данных
-@pytest.fixture
-def task_data(test_user):
-    return {
-        "title": "Test Task",
-        "description": "Test Description",
-        "completed": False,
-        "user_id": test_user.id  # Передаём ID тестового пользователя
-    }
-
-
-@pytest.fixture
-def updated_task_data():
-    return {"title": "Updated Task", "description": "Updated Description", "completed": True}
-
-
+# Фикстуры
 @pytest.fixture
 def test_user(db):
+    """Создание тестового пользователя."""
     user = User(
         id="test-user-id",
         email="test@example.com",
@@ -66,14 +59,37 @@ def test_user(db):
 
 @pytest.fixture
 def auth_headers(test_user):
+    """Создание заголовков авторизации."""
     access_token = create_access_token({"sub": test_user.id})
     return {"Authorization": f"Bearer {access_token}"}
 
 
+@pytest.fixture
+def task_data(test_user):
+    """Тестовые данные для задачи."""
+    return {
+        "title": "Test Task",
+        "description": "Test Description",
+        "completed": False,
+        "user_id": test_user.id,
+    }
+
+
+@pytest.fixture
+def updated_task_data():
+    """Тестовые данные для обновленной задачи."""
+    return {
+        "title": "Updated Task",
+        "description": "Updated Description",
+        "completed": True,
+    }
+
+
 # Тесты
 def test_create_task(db, task_data, auth_headers):
+    """Тест: создание новой задачи."""
     response = client.post("/tasks", json=task_data, headers=auth_headers)
-    assert response.status_code == 200
+    assert response.status_code == 201
     data = response.json()
     assert data["title"] == task_data["title"]
     assert data["description"] == task_data["description"]
@@ -81,9 +97,11 @@ def test_create_task(db, task_data, auth_headers):
 
 
 def test_list_tasks(db, task_data, auth_headers):
-    # Создаём тестовую задачу
+    """Тест: получение списка задач."""
+    # Создаем задачу
     client.post("/tasks", json=task_data, headers=auth_headers)
 
+    # Получаем список задач
     response = client.get("/tasks", headers=auth_headers)
     assert response.status_code == 200
     data = response.json()
@@ -92,10 +110,12 @@ def test_list_tasks(db, task_data, auth_headers):
 
 
 def test_get_task(db, task_data, auth_headers):
-    # Создаём задачу
+    """Тест: получение задачи по ID."""
+    # Создаем задачу
     response = client.post("/tasks", json=task_data, headers=auth_headers)
     task_id = response.json()["id"]
 
+    # Получаем задачу
     response = client.get(f"/tasks/{task_id}", headers=auth_headers)
     assert response.status_code == 200
     data = response.json()
@@ -104,7 +124,8 @@ def test_get_task(db, task_data, auth_headers):
 
 
 def test_update_task(db, task_data, updated_task_data, auth_headers):
-    # Создаём задачу
+    """Тест: обновление задачи."""
+    # Создаем задачу
     response = client.post("/tasks", json=task_data, headers=auth_headers)
     task_id = response.json()["id"]
 
@@ -118,14 +139,15 @@ def test_update_task(db, task_data, updated_task_data, auth_headers):
 
 
 def test_delete_task(db, task_data, auth_headers):
-    # Создаём задачу
+    """Тест: удаление задачи."""
+    # Создаем задачу
     response = client.post("/tasks", json=task_data, headers=auth_headers)
     task_id = response.json()["id"]
 
     # Удаляем задачу
     response = client.delete(f"/tasks/{task_id}", headers=auth_headers)
-    assert response.status_code == 200
-    assert response.json() == {"message": "Task deleted successfully"}
+    assert response.status_code == 204
+    assert response.content == b""
 
     # Проверяем, что задача удалена
     response = client.get(f"/tasks/{task_id}", headers=auth_headers)

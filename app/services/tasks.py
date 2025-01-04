@@ -5,7 +5,7 @@ from app.models.task import Task
 from app.schemas.tasks import TaskCreate, TaskUpdate
 
 
-def get_all_tasks_for_user(db: Session, user_id: str):
+def get_tasks_by_user_id(db: Session, user_id: str):
     """
     Получить все задачи для определённого пользователя.
     """
@@ -15,7 +15,7 @@ def get_all_tasks_for_user(db: Session, user_id: str):
     return tasks
 
 
-def create_task(db: Session, task: TaskCreate, user_id: str):
+def create_task_for_user(db: Session, task: TaskCreate, user_id: str):
     """
     Создать новую задачу для пользователя.
     """
@@ -32,7 +32,7 @@ def create_task(db: Session, task: TaskCreate, user_id: str):
         raise
 
 
-def get_task_by_id(db: Session, task_id: int, user_id: str):
+def get_task_by_id_and_user(db: Session, task_id: int, user_id: str):
     """
     Получить задачу по ID, принадлежащую пользователю.
     """
@@ -45,13 +45,13 @@ def get_task_by_id(db: Session, task_id: int, user_id: str):
     return task
 
 
-def update_task(db: Session, task_id: int, task_data: TaskUpdate, user_id: str):
+def update_task_by_id(db: Session, task_id: int, task_data: TaskUpdate, user_id: str):
     """
     Обновить задачу по ID, если она принадлежит пользователю.
     """
     logger.info(
         f"Обновление задачи ID: {task_id} для пользователя: {user_id}, данные: {task_data.dict(exclude_unset=True)}")
-    db_task = get_task_by_id(db, task_id, user_id)
+    db_task = get_task_by_id_and_user(db, task_id, user_id)
     if db_task:
         try:
             for key, value in task_data.dict(exclude_unset=True).items():
@@ -68,12 +68,12 @@ def update_task(db: Session, task_id: int, task_data: TaskUpdate, user_id: str):
     return None
 
 
-def delete_task(db: Session, task_id: int, user_id: str):
+def delete_task_by_id(db: Session, task_id: int, user_id: str):
     """
     Удалить задачу по ID, если она принадлежит пользователю.
     """
     logger.info(f"Удаление задачи ID: {task_id} для пользователя: {user_id}")
-    db_task = get_task_by_id(db, task_id, user_id)
+    db_task = get_task_by_id_and_user(db, task_id, user_id)
     if db_task:
         try:
             db.delete(db_task)
