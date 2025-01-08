@@ -1,28 +1,62 @@
+from datetime import datetime, timedelta
+
 from app.core.celery_app import celery
 from app.utils.email import send_email
-from app.core.logger import logger  # Импортируем логгер
+from app.models.task import Task
+from app.models.user import User
+from sqlalchemy.orm import Session
+from app.core.logger import logger
+from app.core.db import SessionLocal
 
 
 @celery.task
-def send_email_notification(task_id: int):
+def send_task_reminder():
     """
-    Асинхронная задача для отправки email.
+    Периодическая задача для отправки напоминаний для всех активных задач.
     """
-    logger.info(f"Начало выполнения задачи отправки email для задачи ID {task_id}")
+    logger.info("Запуск задачи для отправки напоминаний обо всех нерешённых задачах.")
+    db: Session = SessionLocal()
 
-    # Имитация получения email пользователя
     try:
-        user_email = "korobko_01@inbox.ru"
-        subject = "Уведомление о задаче"
-        body = f"Ваша задача с ID {task_id} выполнена!"
+        # Получаем задачи, которые не выполнены и подходят под критерии
+        tasks = db.query(Task).filter(
+            Task.email_notification == True, # Уведомления включены
+            Task.completed == False,  # Задача не завершена
+        ).all()
 
-        logger.info(f"Отправка email на адрес {user_email} с темой '{subject}'")
+        if not tasks:
+            logger.info("Нет задач, подходящих для отправки напоминаний.")
+            return {"status": "success", "message": "No tasks to send reminders for."}
 
-        # Отправляем письмо
-        send_email(user_email, subject, body)
+        # Обрабатываем каждую задачу
+        for task in tasks:
+            user_email = task.user.email if task.user else None
 
-        logger.info(f"Email успешно отправлен на адрес {user_email} для задачи ID {task_id}")
-        return {"status": "success", "task_id": task_id}
+            if not user_email:
+                logger.warning(f"У задачи ID {task.id} отсутствует email пользователя.")
+                continue
+
+            # Формируем и отправляем напоминание
+            subject = f"Напоминание о задаче: {task.title}"
+            body = f"""Здравствуйте! Напоминаем вам о задаче:
+
+            Название: {task.title}
+            Описание: {task.description}
+            
+            Задача ещё не выполнена. Пожалуйста, завершите её!
+            """
+
+            try:
+                logger.info(f"Отправка напоминания на {user_email} для задачи ID {task.id}")
+                send_email(user_email, subject, body)
+            except Exception as e:
+                logger.error(f"Ошибка отправки email для задачи ID {task.id}: {e}")
+
+        logger.info("Напоминания обо всех задачах успешно отправлены.")
+        return {"status": "success", "task_count": len(tasks)}
+
     except Exception as e:
-        logger.error(f"Ошибка при отправке email для задачи ID {task_id}: {e}")
-        return {"status": "error", "task_id": task_id, "error": str(e)}
+        logger.error(f"Ошибка при отправке напоминаний: {e}")
+        return {"status": "error", "error": str(e)}
+    finally:
+        db.close()

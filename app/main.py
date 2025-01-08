@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 
 from app.core.init_db import init_db
-from app.routers import auth, tasks, notifications, status
+from app.routers import auth, tasks
 
 app = FastAPI()
 
@@ -11,5 +11,3 @@ async def startup_event():
 
 app.include_router(auth.router)
 app.include_router(tasks.router)
-app.include_router(notifications.router)
-app.include_router(status.router)

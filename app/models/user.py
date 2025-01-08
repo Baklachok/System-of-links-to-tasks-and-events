@@ -15,4 +15,4 @@ class User(Base):
     is_active = Column(Boolean, default=True)
 
     # Реляция для связи с задачами
-    tasks = relationship("Task", back_populates="user")
+    tasks = relationship("Task", back_populates="user", lazy="joined")

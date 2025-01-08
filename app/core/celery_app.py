@@ -1,4 +1,5 @@
 from celery import Celery
+from celery.schedules import crontab
 
 # Создаём приложение Celery
 celery = Celery(
@@ -8,9 +9,13 @@ celery = Celery(
 )
 
 # Опциональные настройки Celery
-celery.conf.task_routes = {
-    "app.tasks.*": {"queue": "default"},
+celery.conf.beat_schedule = {
+    "send-task-reminder-every-10-minutes": {
+        "task": "app.tasks.send_task_reminder",  # Имя задачи
+        "schedule": crontab(minute="*/60"),  # Каждые 60 минут
+    },
 }
+
 celery.conf.task_default_queue = "default"
 celery.conf.result_backend = "rpc://"
 celery.conf.accept_content = ["json"]

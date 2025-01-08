@@ -9,13 +9,14 @@ class TaskBase(BaseModel):
     title: str
     description: Optional[str] = None
     completed: bool = False
+    email_notification: bool = False
 
 
 class TaskCreate(TaskBase):
     """
     Схема для создания задачи.
     """
-    user_id: str  # Указываем ID пользователя, создающего задачу.
+    pass
 
 
 class TaskUpdate(BaseModel):
@@ -25,6 +26,7 @@ class TaskUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
     completed: Optional[bool] = None
+    email_notification: Optional[bool] = None
 
 
 class Task(TaskBase):
