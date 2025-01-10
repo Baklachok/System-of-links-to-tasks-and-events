@@ -14,5 +14,8 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     is_active = Column(Boolean, default=True)
 
+    # Telegram Chat ID
+    telegram_chat_id = Column(String, nullable=True)  # ID чата для отправки сообщений
+
     # Реляция для связи с задачами
     tasks = relationship("Task", back_populates="user", lazy="joined")

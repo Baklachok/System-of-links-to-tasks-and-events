@@ -12,6 +12,7 @@ class UserResponse(BaseModel):
     id: str
     email: EmailStr
     is_active: bool
+    telegram_chat_id: str | None
 
 class Token(BaseModel):
     access_token: str

@@ -14,7 +14,8 @@ class Task(Base):
     completed = Column(Boolean, default=False)
 
     # Новый флаг для email-уведомлений
-    email_notification = Column(Boolean, default=True)  # По умолчанию уведомления включены
+    email_notification = Column(Boolean, default=False)  # По умолчанию уведомления выключены
+    telegram_notification = Column(Boolean, default=False)
 
     # Связь с пользователем
     user_id = Column(String, ForeignKey("users.id"), nullable=False)

@@ -59,5 +59,15 @@ services:
     env_file: .env
     restart: always
 
+  telegram_bot:
+    image: baklachok/links_and_tasks:latest
+    container_name: telegram-bot
+    command: python -m app.telegram_bot  # Укажите путь до скрипта запуска бота
+    env_file: .env
+    depends_on:
+      - fastapi
+    restart: always
+
+
 volumes:
   postgres_data:

@@ -29,6 +29,7 @@ def create_task_for_user(db: Session, task: TaskCreate, user_id: str) -> Task:
         db_task = Task(**task.dict(), user_id=user_id)
         db.add(db_task)
         db.flush()  # Генерация ID
+        db.commit()
         logger.info(f"Задача успешно создана с ID {db_task.id} для пользователя {user_id}")
         return db_task
     except SQLAlchemyError as e:

@@ -10,6 +10,7 @@ class TaskBase(BaseModel):
     description: Optional[str] = None
     completed: bool = False
     email_notification: bool = False
+    telegram_notification: bool = False
 
 
 class TaskCreate(TaskBase):
@@ -27,6 +28,7 @@ class TaskUpdate(BaseModel):
     description: Optional[str] = None
     completed: Optional[bool] = None
     email_notification: Optional[bool] = None
+    telegram_notification: Optional[bool] = None
 
 
 class Task(TaskBase):
