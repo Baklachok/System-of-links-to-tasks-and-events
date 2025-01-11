@@ -20,4 +20,4 @@ celery.conf.task_default_queue = "default"
 celery.conf.result_backend = "rpc://"
 celery.conf.accept_content = ["json"]
 celery.conf.task_serializer = "json"
-celery.autodiscover_tasks(['app.tasks'])
+celery.autodiscover_tasks(['app.tasks.notifications'])

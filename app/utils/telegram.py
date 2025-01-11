@@ -1,6 +1,7 @@
 from app.core.logger import logger
 from app.core.config import bot
 from app.models.task import Task
+from app.models.user import User
 from telegram.error import TelegramError
 
 async def send_task_telegram_notification(task: Task):

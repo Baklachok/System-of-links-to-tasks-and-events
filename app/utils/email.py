@@ -5,6 +5,7 @@ from os import getenv
 
 from app.core.logger import logger
 from app.models.task import Task
+from app.models.user import User
 
 
 def send_email(to_email: str, subject: str, body: str):
