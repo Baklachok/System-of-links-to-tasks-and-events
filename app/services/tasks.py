@@ -93,3 +93,37 @@ def delete_task_by_id(db: Session, task_id: int, user_id: str) -> bool:
     except SQLAlchemyError as e:
         logger.exception(f"Ошибка при удалении задачи ID {task_id}: {e}")
         raise
+
+
+def get_tasks_with_email_notifications(db: Session) -> List[Task]:
+    """
+    Получить задачи с активными email-уведомлениями и статусом невыполненные.
+    """
+    logger.info("Получение задач с email-уведомлениями.")
+    try:
+        tasks = db.query(Task).filter(
+            Task.email_notification == True,
+            Task.completed == False,
+        ).all()
+        logger.info(f"Найдено задач с email-уведомлениями: {len(tasks)}")
+        return tasks
+    except SQLAlchemyError as e:
+        logger.exception(f"Ошибка при получении задач с email-уведомлениями: {e}")
+        raise
+
+
+def get_tasks_with_telegram_notifications(db: Session) -> List[Task]:
+    """
+    Получить задачи с активными Telegram-уведомлениями и статусом невыполненные.
+    """
+    logger.info("Получение задач с Telegram-уведомлениями.")
+    try:
+        tasks = db.query(Task).filter(
+            Task.telegram_notification == True,
+            Task.completed == False,
+        ).all()
+        logger.info(f"Найдено задач с Telegram-уведомлениями: {len(tasks)}")
+        return tasks
+    except SQLAlchemyError as e:
+        logger.exception(f"Ошибка при получении задач с Telegram-уведомлениями: {e}")
+        raise

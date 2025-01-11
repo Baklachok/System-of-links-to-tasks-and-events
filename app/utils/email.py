@@ -4,6 +4,7 @@ from email.mime.multipart import MIMEMultipart
 from os import getenv
 
 from app.core.logger import logger
+from app.models.task import Task
 
 
 def send_email(to_email: str, subject: str, body: str):
@@ -36,3 +37,24 @@ def send_email(to_email: str, subject: str, body: str):
         logger.info(f"Email успешно отправлен на {to_email}")
     except Exception as e:
         logger.error(f"Ошибка при отправке email: {e}")
+
+
+def send_task_email_notification(task: Task):
+    user = task.user
+    if not user or not user.email:
+        logger.warning(f"Email пользователя отсутствует для задачи ID {task.id}")
+        return
+
+    subject = f"Напоминание о задаче: {task.title}"
+    body = (
+        f"Здравствуйте! Напоминаем вам о задаче:\n\n"
+        f"Название: {task.title}\n"
+        f"Описание: {task.description or 'Без описания'}\n\n"
+        f"Задача ещё не выполнена. Пожалуйста, завершите её!\n"
+    )
+
+    try:
+        logger.info(f"Отправка email на {user.email} для задачи ID {task.id}")
+        send_email(user.email, subject, body)
+    except Exception as e:
+        logger.error(f"Ошибка отправки email для задачи ID {task.id}: {e}")

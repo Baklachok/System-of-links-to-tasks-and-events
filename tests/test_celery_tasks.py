@@ -1,12 +1,12 @@
 import pytest
-from unittest.mock import MagicMock, patch, AsyncMock
+from unittest.mock import patch, AsyncMock
 from app.models.task import Task
 from app.models.user import User
-from app.tasks import (
+from app.tasks.notifications import (
     send_task_reminder,
-    _process_email_notification,
-    _process_telegram_notification,
 )
+from app.utils.email import send_task_email_notification
+from app.utils.telegram import send_task_telegram_notification
 
 
 @pytest.fixture
@@ -47,9 +47,9 @@ def mock_task_telegram(mock_user):
     )
 
 
-@patch("app.tasks.SessionLocal")
-@patch("app.tasks._process_email_notification")
-@patch("app.tasks._process_telegram_notification")
+@patch("app.tasks.notifications.SessionLocal")
+@patch("app.tasks.notifications.send_task_email_notification")
+@patch("app.tasks.notifications.send_task_telegram_notification")
 def test_send_task_reminder(
         mock_process_telegram, mock_process_email, mock_session, mock_task_email, mock_task_telegram
 ):
@@ -74,12 +74,12 @@ def test_send_task_reminder(
     assert result["task_count"] == 2
 
 
-@patch("app.tasks.send_email")
+@patch("app.utils.email.send_email")
 def test_process_email_notification(mock_send_email, mock_task_email):
     """
     Тестирует обработку уведомлений по email.
     """
-    _process_email_notification(mock_task_email)
+    send_task_email_notification(mock_task_email)
 
     # Проверяем, что send_email был вызван с нужными параметрами
     mock_send_email.assert_called_once_with(
@@ -92,7 +92,7 @@ def test_process_email_notification(mock_send_email, mock_task_email):
     )
 
 
-@patch("app.tasks.Bot.send_message", new_callable=AsyncMock)
+@patch("app.core.config.Bot.send_message", new_callable=AsyncMock)
 @pytest.mark.asyncio
 async def test_process_telegram_notification(mock_send_message):
     """
@@ -101,7 +101,7 @@ async def test_process_telegram_notification(mock_send_message):
     user = User(id=1, telegram_chat_id="1234567890")
     task = Task(id=1, title="Test Task Telegram", description="Test Description", user=user)
 
-    await _process_telegram_notification(task)
+    await send_task_telegram_notification(task)
 
     mock_send_message.assert_called_once_with(
         chat_id="1234567890",
@@ -114,7 +114,7 @@ async def test_process_telegram_notification(mock_send_message):
     )
 
 
-@patch("app.tasks.Bot.send_message", new_callable=AsyncMock)
+@patch("app.core.config.Bot.send_message", new_callable=AsyncMock)
 @pytest.mark.asyncio
 async def test_process_telegram_notification_missing_chat_id(mock_send_message):
     """
@@ -123,19 +123,19 @@ async def test_process_telegram_notification_missing_chat_id(mock_send_message):
     user = User(id=1)
     task = Task(id=1, title="Test Task Telegram", description="Test Description", user=user)
 
-    await _process_telegram_notification(task)
+    await send_task_telegram_notification(task)
 
     # Проверяем, что bot.send_message НЕ был вызван
     mock_send_message.assert_not_called()
 
 
-@patch("app.tasks.send_email")
+@patch("app.tasks.notifications.send_task_email_notification")
 def test_process_email_notification_missing_email(mock_send_email, mock_task_email):
     """
     Тестирует обработку уведомлений по email с отсутствующим email.
     """
     mock_task_email.user.email = None  # Убираем email
-    _process_email_notification(mock_task_email)
+    send_task_email_notification(mock_task_email)
 
     # Проверяем, что send_email НЕ был вызван
     mock_send_email.assert_not_called()

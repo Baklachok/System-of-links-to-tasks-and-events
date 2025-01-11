@@ -10,8 +10,8 @@ celery = Celery(
 
 # Опциональные настройки Celery
 celery.conf.beat_schedule = {
-    "send-task-reminder-every-10-minutes": {
-        "task": "app.tasks.send_task_reminder",  # Имя задачи
+    "send-task-reminder-every-60-minutes": {
+        "task": "app.tasks.notifications.send_task_reminder",  # Имя задачи
         "schedule": crontab(minute="*/60"),  # Каждые 60 минут
     },
 }
