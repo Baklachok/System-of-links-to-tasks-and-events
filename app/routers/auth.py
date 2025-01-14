@@ -1,22 +1,24 @@
 from uuid import uuid4
 from fastapi import APIRouter, Depends, HTTPException, Response, Request
 from sqlalchemy.orm import Session
-
 from app.core.config import ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_DAYS
 from app.core.db import get_db
 from app.core.logger import logger
 from app.models.user import User
 from app.schemas.auth import UserCreate, UserLogin, UserResponse
 from app.services.auth import (
-    hash_password, verify_password,
-    create_access_token, create_refresh_token, decode_token
+    hash_password,
+    verify_password,
+    create_access_token,
+    create_refresh_token,
+    decode_token,
 )
 
 router = APIRouter()
 
 
 def get_user_by_id(user_id: str, db: Session) -> User:
-    """Получить пользователя по ID из базы данных."""
+    """Получить пользователя по ID."""
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         logger.warning(f"Пользователь с ID {user_id} не найден")
@@ -25,8 +27,18 @@ def get_user_by_id(user_id: str, db: Session) -> User:
 
 
 def get_user_by_email(email: str, db: Session) -> User:
-    """Получить пользователя по email из базы данных."""
+    """Получить пользователя по email."""
     return db.query(User).filter(User.email == email).first()
+
+
+def get_user_from_token(request: Request, db: Session) -> User:
+    """Получить пользователя из токена доступа."""
+    payload = validate_access_token(request)
+    user_id = payload.get("sub")
+    if not user_id:
+        logger.warning("ID пользователя отсутствует в токене")
+        raise HTTPException(status_code=401, detail="Invalid access token")
+    return get_user_by_id(user_id, db)
 
 
 def validate_access_token(request: Request) -> dict:
@@ -35,9 +47,10 @@ def validate_access_token(request: Request) -> dict:
     if not access_token:
         logger.warning("Токен доступа отсутствует")
         raise HTTPException(status_code=401, detail="Access token missing")
-    logger.info(f"Токен: {access_token}")
     try:
-        return decode_token(access_token)
+        payload = decode_token(access_token)
+        logger.info("Токен успешно декодирован")
+        return payload
     except Exception as e:
         logger.error(f"Ошибка декодирования токена: {e}")
         raise HTTPException(status_code=401, detail="Invalid access token")
@@ -47,10 +60,16 @@ def validate_access_token(request: Request) -> dict:
 def register(user: UserCreate, db: Session = Depends(get_db)):
     """Регистрация нового пользователя."""
     if get_user_by_email(user.email, db):
+        logger.warning(f"Попытка регистрации с уже существующим email: {user.email}")
         raise HTTPException(status_code=400, detail="Email already registered")
 
     hashed_password = hash_password(user.password)
-    new_user = User(id=str(uuid4()), email=user.email, hashed_password=hashed_password, phone_number=user.phone_number)
+    new_user = User(
+        id=str(uuid4()),
+        email=user.email,
+        hashed_password=hashed_password,
+        phone_number=user.phone_number,
+    )
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
@@ -85,23 +104,20 @@ def login(user: UserLogin, response: Response, db: Session = Depends(get_db)):
 def refresh_token(request: Request, response: Response, db: Session = Depends(get_db)):
     """Обновление токена доступа."""
     refresh_token = request.cookies.get("refresh_token")
-    logger.debug(f"refresh_token - {refresh_token}")
     if not refresh_token:
         logger.warning("Refresh токен отсутствует")
         raise HTTPException(status_code=401, detail="Refresh token missing")
 
     try:
         payload = decode_token(refresh_token)
+        user_id = payload.get("sub")
+        if not user_id:
+            logger.warning("ID пользователя отсутствует в refresh токене")
+            raise HTTPException(status_code=401, detail="Invalid refresh token")
+        get_user_by_id(user_id, db)  # Проверка существования пользователя
     except Exception as e:
         logger.error(f"Ошибка декодирования refresh токена: {e}")
         raise HTTPException(status_code=401, detail="Invalid refresh token")
-
-    user_id = payload.get("sub")
-    if not user_id:
-        logger.warning("ID пользователя отсутствует в refresh токене")
-        raise HTTPException(status_code=401, detail="Invalid refresh token")
-
-    get_user_by_id(user_id, db)  # Проверка существования пользователя
 
     # Генерация нового Access Token
     new_access_token = create_access_token(data={"sub": user_id})
@@ -116,12 +132,6 @@ def refresh_token(request: Request, response: Response, db: Session = Depends(ge
 def get_me(request: Request, db: Session = Depends(get_db)):
     """Получение данных текущего пользователя."""
     logger.info("Получен запрос на /auth/me")
-    payload = validate_access_token(request)
-    user_id = payload.get("sub")
-    if not user_id:
-        logger.warning("ID пользователя отсутствует в токене")
-        raise HTTPException(status_code=401, detail="Invalid access token")
-
-    user = get_user_by_id(user_id, db)
+    user = get_user_from_token(request, db)
     logger.info(f"Пользователь найден: {user.email}")
     return user
