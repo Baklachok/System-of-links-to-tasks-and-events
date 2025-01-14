@@ -50,8 +50,9 @@ def mock_task_telegram(mock_user):
 @patch("app.tasks.notifications.SessionLocal")
 @patch("app.tasks.notifications.send_task_email_notification")
 @patch("app.tasks.notifications.send_task_telegram_notification")
+@patch("app.tasks.notifications.get_tasks_with_sms_notifications")
 def test_send_task_reminder(
-        mock_process_telegram, mock_process_email, mock_session, mock_task_email, mock_task_telegram
+        mock_get_sms_tasks, mock_process_telegram, mock_process_email, mock_session, mock_task_email, mock_task_telegram
 ):
     """
     Тестирует функцию отправки напоминаний.

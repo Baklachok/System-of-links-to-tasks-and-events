@@ -127,3 +127,13 @@ def get_tasks_with_telegram_notifications(db: Session) -> List[Task]:
     except SQLAlchemyError as e:
         logger.exception(f"Ошибка при получении задач с Telegram-уведомлениями: {e}")
         raise
+
+
+def get_tasks_with_sms_notifications(db: Session):
+    """
+    Получить задачи, которые требуют SMS-уведомлений.
+    """
+    return db.query(Task).filter(
+        Task.sms_notification == True,
+        Task.completed == False,
+    ).all()

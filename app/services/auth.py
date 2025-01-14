@@ -134,7 +134,8 @@ def get_current_user(
         raise HTTPException(status_code=401, detail="User not found")
 
     logger.debug(f"Пользователь найден: {user.email}")
-    return UserResponse(id=user.id, email=user.email, is_active=user.is_active, telegram_chat_id=user.telegram_chat_id)
+    return UserResponse(id=user.id, email=user.email, is_active=user.is_active, telegram_chat_id=user.telegram_chat_id,
+                        phone_number=user.phone_number)
 
 
 def _extract_token_from_header(request: Request) -> str:

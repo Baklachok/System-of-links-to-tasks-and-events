@@ -16,8 +16,8 @@ class Task(Base):
     # Новый флаг для email-уведомлений
     email_notification = Column(Boolean, default=False)  # По умолчанию уведомления выключены
     telegram_notification = Column(Boolean, default=False)
+    sms_notification = Column(Boolean, default=False)
 
     # Связь с пользователем
     user_id = Column(String, ForeignKey("users.id"), nullable=False)
     user = relationship("User", back_populates="tasks", lazy="joined")
-

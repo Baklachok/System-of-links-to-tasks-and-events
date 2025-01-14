@@ -16,6 +16,7 @@ class User(Base):
 
     # Telegram Chat ID
     telegram_chat_id = Column(String, nullable=True)  # ID чата для отправки сообщений
+    phone_number = Column(String, nullable=True)
 
     # Реляция для связи с задачами
     tasks = relationship("Task", back_populates="user", lazy="joined")
